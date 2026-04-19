@@ -1,12 +1,10 @@
-package br.com.zenon.zenonfrauddetector.model;
-
-import br.com.zenon.zenonfrauddetector.enums.TransactionType;
+package br.com.zenon.fraud;
 
 import java.math.BigDecimal;
 
 public record Transaction(
         long step,
-        TransactionType type,
+        EnumTransactionType type,
         BigDecimal amount,
         String nameOrig,
         BigDecimal oldbalanceOrg,
