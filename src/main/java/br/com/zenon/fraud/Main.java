@@ -12,34 +12,19 @@ public class Main {
 
     static void main() {
 
-//        printTransactions();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readFirstNLines();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readAndParseFirst10Lines();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readFileWithBadData();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-        fraudAnalyzer();
-    }
-
-    private static void fraudAnalyzer() {
-        String filePath = "data/PS_log.csv";
-        try {
-            TransactionIngestor.ParseResult result = TransactionIngestor.read(filePath, 50000);
-            FraudAnalyzer analyzer = new FraudAnalyzer(result.transactions());
-            analyzer.printFraudReport();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        printTransactions();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readFirstNLines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readAndParseFirst10Lines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readFileWithBadData();
     }
 
     private static void readFileWithBadData() {
