@@ -31,6 +31,23 @@ public class TransactionIngestor {
         }
     }
 
+    public static ParseResult read(String filePath, int lines) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null && lines-- > 0) {
+                sb.append(line).append("\n");
+            }
+            return parse(sb.toString());
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found: " + filePath);
+            throw e;
+        } catch (IOException e) {
+            System.err.println("Error reading the file: " + e.getMessage());
+            throw e;
+        }
+    }
+
     public static List<String> readFirstNLines(String filePath, int n) throws IOException {
         List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
