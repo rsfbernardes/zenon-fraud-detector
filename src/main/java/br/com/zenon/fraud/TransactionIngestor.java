@@ -7,17 +7,26 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TransactionIngestor {
 
-    public static List<Transaction> read(String filePath) throws IOException {
+    public record ParseResult(List<Transaction> transactions, List<String> errors) {
+    }
+
+    public static ParseResult read(String filePath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            return parse(reader.readAllAsString());
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return parse(sb.toString());
         } catch (FileNotFoundException e) {
-            System.err.println("Arquivo não encontrado: " + filePath);
+            System.err.println("File not found: " + filePath);
             throw e;
         } catch (IOException e) {
-            System.err.println("Erro ao ler o arquivo: " + e.getMessage());
+            System.err.println("Error reading the file: " + e.getMessage());
             throw e;
         }
     }
@@ -37,24 +46,91 @@ public class TransactionIngestor {
     }
 
 
-    static List<Transaction> parse(String content) {
-        return content.lines()
-                .skip(1) // cabeçalho
-                .map(line -> line.split(","))
-                .map(fields -> new Transaction(
-                        Long.parseLong(fields[0]),
-                        EnumTransactionType.valueOf(fields[1]),
-                        new BigDecimal(fields[2]),
-                        fields[3],
-                        new BigDecimal(fields[4]),
-                        new BigDecimal(fields[5]),
-                        fields[6],
-                        new BigDecimal(fields[7]),
-                        new BigDecimal(fields[8]),
-                        Integer.parseInt(fields[9]),
-                        Integer.parseInt(fields[10])
-                ))
-                .toList();
-    }
+    static ParseResult parse(String content) {
+        List<Transaction> transactions = new ArrayList<>();
+        java.util.Set<String> errorsSet = new java.util.LinkedHashSet<>();
 
+        content.lines()
+                .skip(1)
+                .forEach(line -> {
+                    try {
+                        String[] fields = line.split(",", -1);
+                        if (fields.length != 11) {
+                            throw new IllegalArgumentException("Expected 11 fields but got " + fields.length);
+                        }
+                        for (int i = 0; i < fields.length; i++) {
+                            if (fields[i] != null) fields[i] = fields[i].trim();
+                        }
+
+                        long step = Long.parseLong(Objects.requireNonNull(fields[0]));
+                        if (step <= 0) {
+                            throw new IllegalArgumentException("Step should be positive: " + step);
+                        }
+
+                        EnumTransactionType type;
+                        try {
+                            type = EnumTransactionType.valueOf(fields[1]);
+                        } catch (IllegalArgumentException ex) {
+                            throw new IllegalArgumentException("No enum constant br.com.zenon.fraud.TransactionType." + fields[1]);
+                        }
+
+                        if (fields[2] == null || fields[2].isEmpty()) {
+                            throw new NumberFormatException();
+                        }
+
+                        BigDecimal amount = new BigDecimal(fields[2]);
+                        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new IllegalArgumentException("Amount should be positive: " + amount.toPlainString());
+                        }
+
+                        if (fields[3] == null || fields[3].isBlank()) {
+                            throw new IllegalArgumentException("Name should not be empty");
+                        }
+
+                        BigDecimal oldBalanceOrig = new BigDecimal(fields[4]);
+                        if (oldBalanceOrig.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new IllegalArgumentException("OldBalance should be positive: " + oldBalanceOrig.toPlainString());
+                        }
+
+                        BigDecimal newBalanceOrig = new BigDecimal(fields[5]);
+                        if (newBalanceOrig.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new IllegalArgumentException("NewBalance should be positive: " + newBalanceOrig.toPlainString());
+                        }
+
+                        String nameDest = fields[6];
+
+                        BigDecimal oldBalanceDest = new BigDecimal(fields[7]);
+                        if (oldBalanceDest.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new IllegalArgumentException("OldBalance should be positive: " + oldBalanceDest.toPlainString());
+                        }
+
+                        BigDecimal newBalanceDest = new BigDecimal(fields[8]);
+                        if (newBalanceDest.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new IllegalArgumentException("NewBalance should be positive: " + newBalanceDest.toPlainString());
+                        }
+
+                        int isFraud = Integer.parseInt(fields[9]);
+                        int isFlaggedFraud = Integer.parseInt(fields[10]);
+
+                        Transaction transaction = new Transaction(
+                                step,
+                                type,
+                                amount,
+                                fields[3],
+                                oldBalanceOrig,
+                                newBalanceOrig,
+                                nameDest,
+                                oldBalanceDest,
+                                newBalanceDest,
+                                isFraud,
+                                isFlaggedFraud
+                        );
+                        transactions.add(transaction);
+                    } catch (Exception e) {
+                        errorsSet.add("Error: " + line + " | " + e);
+                    }
+                });
+        List<String> errors = new ArrayList<>(errorsSet);
+        return new ParseResult(transactions, errors);
+    }
 }
