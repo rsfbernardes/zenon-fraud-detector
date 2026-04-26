@@ -12,22 +12,22 @@ public class Main {
 
     static void main() {
 
-//        printTransactions();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readFirstNLines();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readAndParseFirst10Lines();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
-//        readFileWithBadData();
-//        System.out.println();
-//        System.out.println("=====================================");
-//        System.out.println();
+        printTransactions();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readFirstNLines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readAndParseFirst10Lines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readFileWithBadData();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
         fraudAnalyzer();
     }
 
