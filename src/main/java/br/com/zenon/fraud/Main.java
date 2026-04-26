@@ -25,6 +25,21 @@ public class Main {
         System.out.println("=====================================");
         System.out.println();
         readFileWithBadData();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        fraudAnalyzer();
+    }
+
+    private static void fraudAnalyzer() {
+        String filePath = "data/PS_log.csv";
+        try {
+            TransactionIngestor.ParseResult result = TransactionIngestor.read(filePath, 50000);
+            FraudAnalyzer analyzer = new FraudAnalyzer(result.transactions());
+            analyzer.printFraudReport();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void readFileWithBadData() {
