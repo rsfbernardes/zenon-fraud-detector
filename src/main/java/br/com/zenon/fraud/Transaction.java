@@ -7,11 +7,11 @@ public record Transaction(
         EnumTransactionType type,
         BigDecimal amount,
         String nameOrig,
-        BigDecimal oldbalanceOrg,
-        BigDecimal newbalanceOrig,
+        BigDecimal oldBalanceOrig,
+        BigDecimal newBalanceOrig,
         String nameDest,
-        BigDecimal oldbalanceDest,
-        BigDecimal newbalanceDest,
+        BigDecimal oldBalanceDest,
+        BigDecimal newBalanceDest,
         int isFraud,
         int isFlaggedFraud
 ) {}

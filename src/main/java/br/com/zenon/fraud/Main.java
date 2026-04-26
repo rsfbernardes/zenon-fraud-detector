@@ -10,21 +10,42 @@ import static java.lang.Math.min;
 
 public class Main {
 
-    static void main() throws IOException {
+    static void main() {
 
         printTransactions();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
         readFirstNLines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
         readAndParseFirst10Lines();
+        System.out.println();
+        System.out.println("=====================================");
+        System.out.println();
+        readFileWithBadData();
+    }
 
+    private static void readFileWithBadData() {
+        String filePath = "data/paysim_with_bad_data.csv";
+        try {
+            TransactionIngestor.ParseResult result = TransactionIngestor.read(filePath);
+            result.errors().forEach(System.out::println);
+            System.out.println(result.transactions().size());
+            result.transactions().forEach(System.out::println);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void readAndParseFirst10Lines() {
-        String FilePath = "data/PS_log.csv";
+        String filePath = "data/PS_log.csv";
         try {
-            List<Transaction> transactions = TransactionIngestor.read(FilePath);
-            System.out.println("Primeiras 10 transações: ");
-            for (int i = 0; i < min(10, transactions.size()); i++) {
-                System.out.println(transactions.get(i));
+            TransactionIngestor.ParseResult result = TransactionIngestor.read(filePath);
+            System.out.println("First 10 transactions: ");
+            for (int i = 0; i < min(10, result.transactions().size()); i++) {
+                System.out.println(result.transactions().get(i));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -39,9 +60,8 @@ public class Main {
             List<String> first1000Lines = TransactionIngestor.readFirstNLines(filePath, linhas);
             System.out.println("Lidas " + first1000Lines.size() + " linhas do arquivo");
 
-            // Processa e imprime a última linha
             first1000Lines.stream()
-                    .skip(first1000Lines.size() - 1)  // Pula para o último
+                    .skip(first1000Lines.size() - 1)
                     .findFirst()
                     .ifPresent(lastLine -> System.out.println("Última linha: " + lastLine));
 
@@ -78,9 +98,7 @@ public class Main {
                 1,
                 0
         );
-
         System.out.println(transaction1);
         System.out.println(transaction2);
     }
-
 }
