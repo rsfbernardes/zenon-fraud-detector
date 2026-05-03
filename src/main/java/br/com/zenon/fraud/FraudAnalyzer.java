@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.FALSE;
+
 public class FraudAnalyzer {
 
     private final List<Transaction> transactions;
@@ -69,7 +71,7 @@ public class FraudAnalyzer {
 
     private @NonNull List<Transaction> getAllFraudTransactions() {
         return transactions.stream()
-                .filter(t -> t.isFraud() == 1)
+                .filter(t -> !t.isFraud())
                 .collect(Collectors.toList());
     }
 
