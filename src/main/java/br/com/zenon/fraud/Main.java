@@ -3,12 +3,16 @@ package br.com.zenon.fraud;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.zenon.fraud.EnumTransactionType.CASH_OUT;
 import static br.com.zenon.fraud.EnumTransactionType.PAYMENT;
 import static java.lang.Math.min;
 
 public class Main {
+
+    private static final TransactionListRepositoryImpl transactionListRepositoryImpl = new TransactionListRepositoryImpl();
+
 
     static void main() {
 
@@ -20,7 +24,7 @@ public class Main {
         System.out.println();
         System.out.println("=====================================");
         System.out.println();
-        readAndParseFirst10Lines();
+        readParseAndPrintFirst10Lines();
         System.out.println();
         System.out.println("=====================================");
         System.out.println();
@@ -29,6 +33,52 @@ public class Main {
         System.out.println("=====================================");
         System.out.println();
         fraudAnalyzer();
+        System.out.println("=====================================");
+        System.out.println();
+        findByOriginName("C1231006815");
+        System.out.println();
+        findByOriginName("C12345");
+
+        System.out.println();
+        findLastByOriginName();
+        System.out.println();
+        findByOriginNameUsingMap();
+    }
+
+    private static void findLastByOriginName() {
+        TransactionIngestor.ParseResult parseResult = readAndParseFirst100000Lines();
+        var start = System.nanoTime();
+       Optional<Transaction> transactionOptional = transactionListRepositoryImpl.findLastByOriginName("C1868032458", parseResult.transactions());
+        var end = System.nanoTime();
+        System.out.println((end - start)/1_000_000.0 + " ms using list");
+       if (transactionOptional.isPresent()) {
+           System.out.println(transactionOptional.get());
+       } else {
+           System.out.println("No transactions found");
+       }
+    }
+
+    private static void findByOriginNameUsingMap() {
+        TransactionIngestor.ParseResult parseResult = readAndParseFirst100000Lines();
+        long start = System.nanoTime();
+        Optional<Transaction> transactionOptional = transactionListRepositoryImpl.findByOriginNameUsingMap("C1868032458", parseResult.transactions());
+        long end = System.nanoTime();
+        System.out.println((end - start)/1_000_000.0 + " ms using map");
+        if (transactionOptional.isPresent()) {
+            System.out.println(transactionOptional.get());
+        } else {
+            System.out.println("No transactions found");
+        }
+    }
+
+    private static void findByOriginName(String originName) {
+        TransactionIngestor.ParseResult parseResult = readAndParseFirst100000Lines();
+        Optional<Transaction> transactionOptional = transactionListRepositoryImpl.findByOriginName(originName, parseResult.transactions());
+        if (transactionOptional.isPresent()) {
+            System.out.println(transactionOptional.get());
+        } else {
+            System.out.println("Transaction not found for client: " + originName);
+        }
     }
 
     private static void fraudAnalyzer() {
@@ -54,14 +104,23 @@ public class Main {
         }
     }
 
-    private static void readAndParseFirst10Lines() {
+    private static void readParseAndPrintFirst10Lines() {
         String filePath = "data/PS_log.csv";
         try {
             TransactionIngestor.ParseResult result = TransactionIngestor.read(filePath);
-            System.out.println("First 10 transactions: ");
+            System.out.println("First " + 10 + "transactions: ");
             for (int i = 0; i < min(10, result.transactions().size()); i++) {
                 System.out.println(result.transactions().get(i));
             }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static TransactionIngestor.ParseResult readAndParseFirst100000Lines() {
+        String filePath = "data/PS_log.csv";
+        try {
+            return TransactionIngestor.read(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -96,8 +155,8 @@ public class Main {
                 "M1979787155",
                 BigDecimal.ZERO,
                 BigDecimal.ZERO,
-                0,
-                0
+                false,
+                false
         );
 
         var transaction2 = new Transaction(
@@ -110,8 +169,8 @@ public class Main {
                 "C873221189",
                 BigDecimal.valueOf(6510099.11),
                 BigDecimal.valueOf(7360101.63),
-                1,
-                0
+                true,
+                false
         );
         System.out.println(transaction1);
         System.out.println(transaction2);

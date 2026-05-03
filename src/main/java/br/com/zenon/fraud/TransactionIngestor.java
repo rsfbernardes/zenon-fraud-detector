@@ -18,7 +18,7 @@ public class TransactionIngestor {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             StringBuilder sb = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
+            for (int i = 0; i < 100001 && (line = reader.readLine()) != null; i++) {
                 sb.append(line).append("\n");
             }
             return parse(sb.toString());
@@ -126,8 +126,8 @@ public class TransactionIngestor {
                             throw new IllegalArgumentException("NewBalance should be positive: " + newBalanceDest.toPlainString());
                         }
 
-                        int isFraud = Integer.parseInt(fields[9]);
-                        int isFlaggedFraud = Integer.parseInt(fields[10]);
+                        boolean isFraud = Boolean.parseBoolean((fields[9]));
+                        boolean isFlaggedFraud = Boolean.parseBoolean(fields[10]);
 
                         Transaction transaction = new Transaction(
                                 step,
